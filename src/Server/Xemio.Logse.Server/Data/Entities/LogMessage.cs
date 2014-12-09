@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
 
-namespace Xemio.Logse.Server.Entities
+namespace Xemio.Logse.Server.Data.Entities
 {
     internal class LogMessage : AggregateRoot
     {
@@ -15,6 +15,6 @@ namespace Xemio.Logse.Server.Entities
 
         public JObject AdditionalData { get; set; }
 
-        public string ApiKeyId { get; set; }
+        public string ApiKey { get; set; }
     }
 }

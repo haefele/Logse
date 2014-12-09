@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Raven.Client.Indexes;
-using Xemio.Logse.Server.Entities;
-using Xemio.Logse.Server.Models;
+using Xemio.Logse.Server.Data.Entities;
+using Xemio.Logse.Server.Data.Models;
 
 namespace Xemio.Logse.Server.Raven.Transformers
 {
@@ -17,6 +17,11 @@ namespace Xemio.Logse.Server.Raven.Transformers
                     IsDeactivated = project.IsDeactivated,
                     Name = project.Name
                 };
+        }
+
+        public override string TransformerName
+        {
+            get { return "Project/ToProjectModel"; }
         }
     }
 }

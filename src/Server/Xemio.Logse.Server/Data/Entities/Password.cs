@@ -1,8 +1,7 @@
-using System;
 using System.Linq;
 using Xemio.Logse.Server.Encryption;
 
-namespace Xemio.Logse.Server.Entities
+namespace Xemio.Logse.Server.Data.Entities
 {
     public class Password
     {

@@ -1,4 +1,4 @@
-﻿namespace Xemio.Logse.Server.Models
+﻿namespace Xemio.Logse.Server.Data.Models
 {
     public class ProjectModel
     {

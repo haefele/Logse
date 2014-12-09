@@ -98,28 +98,32 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\Models\ApiKeyModel.cs" />
     <Compile Include="Encryption\SaltCombiner.cs" />
     <Compile Include="Encryption\SecretGenerator.cs" />
-    <Compile Include="Entities\AggregateRoot.cs" />
-    <Compile Include="Entities\ApiKey.cs" />
-    <Compile Include="Entities\ApiKeyMode.cs" />
-    <Compile Include="Entities\GlobalSettings.cs" />
-    <Compile Include="Entities\LoggingLevel.cs" />
-    <Compile Include="Entities\LogMessage.cs" />
-    <Compile Include="Entities\Password.cs" />
-    <Compile Include="Entities\Project.cs" />
+    <Compile Include="Data\Entities\AggregateRoot.cs" />
+    <Compile Include="Data\Entities\ApiKey.cs" />
+    <Compile Include="Data\ApiKeyMode.cs" />
+    <Compile Include="Data\Entities\GlobalSettings.cs" />
+    <Compile Include="Data\LoggingLevel.cs" />
+    <Compile Include="Data\Entities\LogMessage.cs" />
+    <Compile Include="Data\Entities\Password.cs" />
+    <Compile Include="Data\Entities\Project.cs" />
     <Compile Include="Extensions\AsyncAdvancedSessionOperationsExtensions.cs" />
     <Compile Include="Extensions\DependencyResolverExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="Models\ProjectModel.cs" />
+    <Compile Include="Data\Models\ProjectModel.cs" />
+    <Compile Include="Raven\Transformers\ProjectToApiKeyModels.cs" />
     <Compile Include="Raven\Transformers\ProjectToProjectModel.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WebApi\ContentNegotiation\JsonContentNegotiator.cs" />
+    <Compile Include="WebApi\Controller\ApiKeysController.cs" />
     <Compile Include="WebApi\Controller\LogseController.cs" />
     <Compile Include="WebApi\Controller\ProjectsController.cs" />
     <Compile Include="WebApi\Filters\RequiresGlobalPasswordAttribute.cs" />
     <Compile Include="Windsor\CommonWindsorInstaller.cs" />
+    <Compile Include="Windsor\Startables\GlobalPasswordStartable.cs" />
     <Compile Include="Windsor\WindsorDependencyScope.cs" />
     <Compile Include="Windsor\WindsorResolver.cs" />
   </ItemGroup>

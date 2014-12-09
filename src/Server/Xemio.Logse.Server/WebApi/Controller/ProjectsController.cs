@@ -5,9 +5,9 @@ using System.Net.Http.Formatting;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Raven.Client;
-using Xemio.Logse.Server.Entities;
+using Xemio.Logse.Server.Data.Entities;
+using Xemio.Logse.Server.Data.Models;
 using Xemio.Logse.Server.Extensions;
-using Xemio.Logse.Server.Models;
 using Xemio.Logse.Server.Raven.Transformers;
 using Xemio.Logse.Server.WebApi.Filters;
 
@@ -40,6 +40,7 @@ namespace Xemio.Logse.Server.WebApi.Controller
             await this.DocumentSession.StoreAsync(project);
             return Request.CreateResponse(HttpStatusCode.Created, project.Id.GetIntId());
         }
+
         [HttpGet]
         [RequiresGlobalPassword]
         [Route("Projects")]
@@ -66,6 +67,7 @@ namespace Xemio.Logse.Server.WebApi.Controller
 
             return Request.CreateResponse(HttpStatusCode.Found, project);
         }
+
         [HttpGet]
         [RequiresGlobalPassword]
         [Route("Projects/{projectId:int}/Deactivate")]

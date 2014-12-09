@@ -1,6 +1,8 @@
 ﻿using System.IO;
 using System.Runtime.Remoting.Messaging;
 using System.Web.Http;
+using Castle.Core;
+using Castle.Facilities.Startable;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
@@ -35,6 +37,13 @@ namespace Xemio.Logse.Server.Windsor
             container.Register(
                 Component.For<IDocumentStore>().Instance(server.DocumentStore).LifestyleSingleton(),
                 Component.For<IAsyncDocumentSession>().UsingFactoryMethod((kernel, context) => kernel.Resolve<IDocumentStore>().OpenAsyncSession()));
+
+            //Startables
+            container.AddFacility<StartableFacility>(f => f.DeferredStart());
+
+            container.Register(Classes
+                .FromThisAssembly()
+                .BasedOn<IStartable>());
         }
         #endregion
 
@@ -51,7 +60,6 @@ namespace Xemio.Logse.Server.Windsor
                 DataDirectory = Path.Combine(".", "Database", "Data"),
                 CompiledIndexCacheDirectory = Path.Combine(".", "Database", "Raven"),
                 PluginsDirectory = Path.Combine(".", "Database", "Plugins"),
-                VirtualDirectory = Path.Combine(".", "Database", "Virtual"),
             };
             config.Settings.Add("Raven/CompiledIndexCacheDirectory", config.CompiledIndexCacheDirectory);
 

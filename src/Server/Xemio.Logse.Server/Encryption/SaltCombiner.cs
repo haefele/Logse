@@ -11,6 +11,8 @@ namespace Xemio.Logse.Server.Encryption
         /// <param name="password">The password.</param>
         public static byte[] Combine(byte[] salt, string password)
         {
+            password = password ?? string.Empty;
+
             using (var hasher = new Rfc2898DeriveBytes(password, salt))
             {
                 return hasher.GetBytes(128);

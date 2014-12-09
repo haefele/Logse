@@ -6,7 +6,7 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using Raven.Client;
 using Raven.Client.Extensions;
-using Xemio.Logse.Server.Entities;
+using Xemio.Logse.Server.Data.Entities;
 using Xemio.Logse.Server.Extensions;
 
 namespace Xemio.Logse.Server.WebApi.Filters
@@ -32,12 +32,7 @@ namespace Xemio.Logse.Server.WebApi.Filters
 
             using (documentSession.Advanced.DocumentStore.AggressivelyCache())
             {
-                var globalSettings = documentSession.LoadAsync<GlobalSettings>(1).Result;
-                if (globalSettings == null)
-                {
-                    globalSettings = new GlobalSettings();
-                    globalSettings.GlobalPassword.Change("password");
-                }
+                var globalSettings = documentSession.LoadAsync<GlobalSettings>(GlobalSettings.GlobalId).Result;
 
                 string givenHash = this.ExtractHash(actionContext);
 

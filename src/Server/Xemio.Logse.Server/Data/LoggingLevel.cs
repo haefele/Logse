@@ -1,4 +1,4 @@
-﻿namespace Xemio.Logse.Server.Entities
+﻿namespace Xemio.Logse.Server.Data
 {
     public enum LoggingLevel
     {
