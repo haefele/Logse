@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Raven.Client;
 using Xemio.Logse.Server.Entities;
+using Xemio.Logse.Server.Extensions;
+using Xemio.Logse.Server.Models;
+using Xemio.Logse.Server.Raven.Transformers;
 using Xemio.Logse.Server.WebApi.Filters;
 
 namespace Xemio.Logse.Server.WebApi.Controller
@@ -35,15 +38,18 @@ namespace Xemio.Logse.Server.WebApi.Controller
             };
 
             await this.DocumentSession.StoreAsync(project);
-
-            return Request.CreateResponse(HttpStatusCode.Created, project.Id);
+            return Request.CreateResponse(HttpStatusCode.Created, project.Id.GetIntId());
         }
         [HttpGet]
         [RequiresGlobalPassword]
         [Route("Projects")]
         public async Task<HttpResponseMessage> GetProjects()
         {
-            IList<Project> projects = await this.DocumentSession.Query<Project>().ToListAsync();
+            IList<ProjectModel> projects = await this.DocumentSession
+                .Query<Project>()
+                .TransformWith<ProjectToProjectModel, ProjectModel>()
+                .ToListAsync();
+
             return Request.CreateResponse(HttpStatusCode.Found, projects);
         }
 
@@ -52,12 +58,13 @@ namespace Xemio.Logse.Server.WebApi.Controller
         [Route("Projects/{projectId:int}")]
         public async Task<HttpResponseMessage> GetProject(int projectId)
         {
-            var project = await this.DocumentSession.LoadAsync<Project>(projectId);
+            string projectStringId = this.DocumentSession.Advanced.GetStringIdFor<Project>(projectId);
+            var project = await this.DocumentSession.LoadAsync<ProjectToProjectModel, ProjectModel>(projectStringId);
 
             if (project == null)
                 return Request.CreateResponse(HttpStatusCode.NotFound);
 
-            return Request.CreateResponse(HttpStatusCode.Found, projectId);
+            return Request.CreateResponse(HttpStatusCode.Found, project);
         }
         [HttpGet]
         [RequiresGlobalPassword]

@@ -33,6 +33,12 @@ namespace Xemio.Logse.Server.WebApi.Filters
             using (documentSession.Advanced.DocumentStore.AggressivelyCache())
             {
                 var globalSettings = documentSession.LoadAsync<GlobalSettings>(1).Result;
+                if (globalSettings == null)
+                {
+                    globalSettings = new GlobalSettings();
+                    globalSettings.GlobalPassword.Change("password");
+                }
+
                 string givenHash = this.ExtractHash(actionContext);
 
                 return globalSettings.GlobalPassword.IsCorrect(givenHash);
