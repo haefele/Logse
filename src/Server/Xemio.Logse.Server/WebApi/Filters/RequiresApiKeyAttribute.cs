@@ -1,17 +1,19 @@
-﻿using System;
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using Raven.Client;
-using Raven.Client.Extensions;
+using Raven.Client.Linq;
 using Xemio.Logse.Server.Data.Entities;
 using Xemio.Logse.Server.Extensions;
+using Xemio.Logse.Server.Raven.Indexes;
 
 namespace Xemio.Logse.Server.WebApi.Filters
 {
-    public class RequiresGlobalPasswordAttribute : AuthorizeAttribute
+    public class RequiresApiKeyAttribute : AuthorizeAttribute
     {
         #region Methods
         /// <summary>
@@ -32,22 +34,26 @@ namespace Xemio.Logse.Server.WebApi.Filters
 
             using (documentSession.Advanced.DocumentStore.AggressivelyCache())
             {
-                var globalSettings = documentSession.LoadAsync<GlobalSettings>(GlobalSettings.GlobalId).Result;
+                string key = this.ExtractApiKey(actionContext);
 
-                string givenHash = this.ExtractHash(actionContext);
+                ApiKey apiKey = documentSession.Query<ApiKey, ApiKeys_ByProjectIdAndKey>()
+                    .FirstOrDefaultAsync(f => f.Key == key)
+                    .Result;
 
-                return globalSettings.GlobalPassword.IsCorrect(givenHash);
+                if (apiKey == null)
+                    return false;
+
+                return apiKey.IsDeactivated == false;
             }
         }
         #endregion
 
         #region Private Methods
         /// <summary>
-        /// Extracts the hash.
+        /// Extracts the API key.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private string ExtractHash(HttpActionContext context)
+        private string ExtractApiKey(HttpActionContext context)
         {
             if (context.Request.Headers.Authorization != null &&
                 context.Request.Headers.Authorization.Scheme == "Logse")
@@ -57,7 +63,7 @@ namespace Xemio.Logse.Server.WebApi.Filters
             }
 
             NameValueCollection query = context.Request.RequestUri.ParseQueryString();
-            return query["Password"];
+            return query["ApiKey"];
         }
         #endregion
     }

@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Raven.Client;
 using Raven.Json.Linq;
+using Raven.Client.Linq;
 using Xemio.Logse.Server.Data;
 using Xemio.Logse.Server.Data.Entities;
 using Xemio.Logse.Server.Data.Models;
 using Xemio.Logse.Server.Extensions;
+using Xemio.Logse.Server.Raven.Indexes;
 using Xemio.Logse.Server.Raven.Transformers;
 using Xemio.Logse.Server.WebApi.Filters;
 
@@ -31,46 +33,53 @@ namespace Xemio.Logse.Server.WebApi.Controller
         #region Methods
         [HttpGet]
         [RequiresGlobalPassword]
-        [Route("Projects/{projectId:int}/ApiKeys/Create")]
-        public async Task<HttpResponseMessage> CreateApiKey(int projectId, string name, ApiKeyMode mode)
+        [Route("ApiKeys/Create")]
+        public async Task<HttpResponseMessage> CreateApiKey([FromUri]int projectId, [FromUri]string name, [FromUri]ApiKeyMode mode)
         {
-            var project = await this.DocumentSession.LoadAsync<Project>(projectId);
+            string projectStringId = this.DocumentSession.Advanced.GetStringIdFor<Project>(projectId);
+            var project = await this.DocumentSession.LoadAsync<Project>(projectStringId);
 
             if (project == null)
                 return Request.CreateResponse(HttpStatusCode.NotFound);
 
             var key = new ApiKey
             {
+                ProjectId = project.Id,
                 Key = Guid.NewGuid().ToString("N"),
                 Name = name,
                 Mode = mode
             };
-            project.ApiKeys.Add(key);
+
+            await this.DocumentSession.StoreAsync(key);
 
             return Request.CreateResponse(HttpStatusCode.Created, key.Key);
         }
         [HttpGet]
         [RequiresGlobalPassword]
-        [Route("Projects/{projectId:int}/ApiKeys")]
-        public async Task<HttpResponseMessage> GetApiKeys(int projectId)
+        [Route("ApiKeys")]
+        public async Task<HttpResponseMessage> GetApiKeys([FromUri]int projectId)
         {
-            var project = await this.DocumentSession.LoadAsync<Project>(projectId);
+            string projectStringId = this.DocumentSession.Advanced.GetStringIdFor<Project>(projectId);
+            var project = await this.DocumentSession.LoadAsync<Project>(projectStringId);
 
             if (project == null)
                 return Request.CreateResponse(HttpStatusCode.NotFound);
 
-            string projectStringId = this.DocumentSession.Advanced.GetStringIdFor<Project>(projectId);
-            ApiKeyModel[] keys = await this.DocumentSession.LoadAsync<ProjectToApiKeyModels, ApiKeyModel[]>(projectStringId);
+            var keys = await this.DocumentSession.Query<ApiKey, ApiKeys_ByProjectIdAndKey>()
+                .Where(f => f.ProjectId == project.Id)
+                .TransformWith<ApiKey_ToApiKeyModel, ApiKeyModel>()
+                .ToListAsync();
 
             return Request.CreateResponse(HttpStatusCode.Found, keys);
         }
         [HttpGet]
         [RequiresGlobalPassword]
-        [Route("Projects/{projectId:int}/ApiKeys/{key}")]
-        public async Task<HttpResponseMessage> GetApiKey(int projectId, string key)
+        [Route("ApiKeys/{key}")]
+        public async Task<HttpResponseMessage> GetApiKey([FromUri]string key)
         {
-            string projectStringId = this.DocumentSession.Advanced.GetStringIdFor<Project>(projectId);
-            ApiKeyModel theKey = await this.DocumentSession.LoadAsync<ProjectToApiKeyModels, ApiKeyModel>(projectStringId, f => f.AddTransformerParameter("key", RavenJToken.FromObject(key)));
+            string apiKeyStringId = this.DocumentSession.Advanced.GetStringIdFor<ApiKey>(key);
+
+            ApiKeyModel theKey = await this.DocumentSession.LoadAsync<ApiKey_ToApiKeyModel, ApiKeyModel>(apiKeyStringId);
 
             if (theKey == null)
                 return Request.CreateResponse(HttpStatusCode.NotFound);
@@ -79,14 +88,12 @@ namespace Xemio.Logse.Server.WebApi.Controller
         }
         [HttpGet]
         [RequiresGlobalPassword]
-        [Route("Projects/{projectId:int}/ApiKeys/{key}/Activate")]
-        public async Task<HttpResponseMessage> ActivateApiKey(int projectId, string key)
+        [Route("ApiKeys/{key}/Activate")]
+        public async Task<HttpResponseMessage> ActivateApiKey([FromUri]string key)
         {
-            Project project = await this.DocumentSession.LoadAsync<Project>(projectId);
-            if (project == null)
-                return Request.CreateResponse(HttpStatusCode.NotFound);
+            string apiKeyStringId = this.DocumentSession.Advanced.GetStringIdFor<ApiKey>(key);
+            ApiKey apiKey = await this.DocumentSession.LoadAsync<ApiKey>(apiKeyStringId);
 
-            var apiKey = project.ApiKeys.FirstOrDefault(f => f.Key == key);
             if (apiKey == null)
                 return Request.CreateResponse(HttpStatusCode.NotFound);
 
@@ -96,14 +103,12 @@ namespace Xemio.Logse.Server.WebApi.Controller
         }
         [HttpGet]
         [RequiresGlobalPassword]
-        [Route("Projects/{projectId:int}/ApiKeys/{key}/Deactivate")]
-        public async Task<HttpResponseMessage> DeactivateApiKey(int projectId, string key)
+        [Route("ApiKeys/{key}/Deactivate")]
+        public async Task<HttpResponseMessage> DeactivateApiKey([FromUri]string key)
         {
-            Project project = await this.DocumentSession.LoadAsync<Project>(projectId);
-            if (project == null)
-                return Request.CreateResponse(HttpStatusCode.NotFound);
+            string apiKeyStringId = this.DocumentSession.Advanced.GetStringIdFor<ApiKey>(key);
+            ApiKey apiKey = await this.DocumentSession.LoadAsync<ApiKey>(apiKeyStringId);
 
-            var apiKey = project.ApiKeys.FirstOrDefault(f => f.Key == key);
             if (apiKey == null)
                 return Request.CreateResponse(HttpStatusCode.NotFound);
 

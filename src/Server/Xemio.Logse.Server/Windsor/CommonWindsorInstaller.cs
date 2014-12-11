@@ -6,11 +6,14 @@ using Castle.Facilities.Startable;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
+using Raven.Abstractions.Util;
 using Raven.Client;
+using Raven.Client.Document;
 using Raven.Client.Extensions;
 using Raven.Client.Indexes;
 using Raven.Database.Config;
 using Raven.Server;
+using Xemio.Logse.Server.Data.Entities;
 
 namespace Xemio.Logse.Server.Windsor
 {
@@ -69,6 +72,17 @@ namespace Xemio.Logse.Server.Windsor
 
             ravenDbServer.DocumentStore.DefaultDatabase = Dependency.OnAppSettingsValue("Logse/RavenName").Value;
             ravenDbServer.DocumentStore.DatabaseCommands.GlobalAdmin.EnsureDatabaseExists(ravenDbServer.DocumentStore.DefaultDatabase);
+
+            ravenDbServer.DocumentStore.Conventions.RegisterIdConvention<ApiKey>((dbName, databaseCommands, entity) =>
+            {
+                string typeTagName = ravenDbServer.DocumentStore.Conventions.GetTypeTagName(entity.GetType());
+                return string.Format("{0}/{1}", typeTagName, entity.Key);
+            });
+            ravenDbServer.DocumentStore.Conventions.RegisterAsyncIdConvention<ApiKey>((dbName, databaseCommands, entity) =>
+            {
+                string typeTagName = ravenDbServer.DocumentStore.Conventions.GetTypeTagName(entity.GetType());
+                return new CompletedTask<string>(string.Format("{0}/{1}", typeTagName, entity.Key));
+            });
 
             ravenDbServer.FilesStore.DefaultFileSystem = Dependency.OnAppSettingsValue("Logse/RavenName").Value;
             ravenDbServer.FilesStore.AsyncFilesCommands.Admin.EnsureFileSystemExistsAsync(ravenDbServer.FilesStore.DefaultFileSystem).Wait();

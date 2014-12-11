@@ -5,9 +5,10 @@ using Xemio.Logse.Server.Data.Models;
 
 namespace Xemio.Logse.Server.Raven.Transformers
 {
-    internal class ProjectToProjectModel : AbstractTransformerCreationTask<Project>
+    // ReSharper disable once InconsistentNaming
+    internal class Project_ToProjectModel : AbstractTransformerCreationTask<Project>
     {
-        public ProjectToProjectModel()
+        public Project_ToProjectModel()
         {
             TransformResults = projects =>
                 from project in projects
@@ -17,11 +18,6 @@ namespace Xemio.Logse.Server.Raven.Transformers
                     IsDeactivated = project.IsDeactivated,
                     Name = project.Name
                 };
-        }
-
-        public override string TransformerName
-        {
-            get { return "Project/ToProjectModel"; }
         }
     }
 }

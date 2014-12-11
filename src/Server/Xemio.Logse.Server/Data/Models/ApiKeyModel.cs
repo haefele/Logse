@@ -2,6 +2,7 @@
 {
     public class ApiKeyModel
     {
+        public int ProjectId { get; set; }
         public string Name { get; set; }
         public string Key { get; set; }
         public ApiKeyMode Mode { get; set; }

@@ -30,11 +30,11 @@ namespace Xemio.Logse.Server.WebApi.Controller
         [HttpGet]
         [RequiresGlobalPassword]
         [Route("Projects/Create")]
-        public async Task<HttpResponseMessage> CreateProject([FromUri]string projectName)
+        public async Task<HttpResponseMessage> CreateProject([FromUri]string name)
         {
             var project = new Project
             {
-                Name = projectName
+                Name = name
             };
 
             await this.DocumentSession.StoreAsync(project);
@@ -48,7 +48,7 @@ namespace Xemio.Logse.Server.WebApi.Controller
         {
             IList<ProjectModel> projects = await this.DocumentSession
                 .Query<Project>()
-                .TransformWith<ProjectToProjectModel, ProjectModel>()
+                .TransformWith<Project_ToProjectModel, ProjectModel>()
                 .ToListAsync();
 
             return Request.CreateResponse(HttpStatusCode.Found, projects);
@@ -57,10 +57,10 @@ namespace Xemio.Logse.Server.WebApi.Controller
         [HttpGet]
         [RequiresGlobalPassword]
         [Route("Projects/{projectId:int}")]
-        public async Task<HttpResponseMessage> GetProject(int projectId)
+        public async Task<HttpResponseMessage> GetProject([FromUri]int projectId)
         {
             string projectStringId = this.DocumentSession.Advanced.GetStringIdFor<Project>(projectId);
-            var project = await this.DocumentSession.LoadAsync<ProjectToProjectModel, ProjectModel>(projectStringId);
+            var project = await this.DocumentSession.LoadAsync<Project_ToProjectModel, ProjectModel>(projectStringId);
 
             if (project == null)
                 return Request.CreateResponse(HttpStatusCode.NotFound);
@@ -71,7 +71,7 @@ namespace Xemio.Logse.Server.WebApi.Controller
         [HttpGet]
         [RequiresGlobalPassword]
         [Route("Projects/{projectId:int}/Deactivate")]
-        public async Task<HttpResponseMessage> DeactivateProject(int projectId)
+        public async Task<HttpResponseMessage> DeactivateProject([FromUri]int projectId)
         {
             var project = await this.DocumentSession.LoadAsync<Project>(projectId);
 
@@ -86,7 +86,7 @@ namespace Xemio.Logse.Server.WebApi.Controller
         [HttpGet]
         [RequiresGlobalPassword]
         [Route("Projects/{projectId:int}/Activate")]
-        public async Task<HttpResponseMessage> ActivateProject(int projectId)
+        public async Task<HttpResponseMessage> ActivateProject([FromUri]int projectId)
         {
             var project = await this.DocumentSession.LoadAsync<Project>(projectId);
 
