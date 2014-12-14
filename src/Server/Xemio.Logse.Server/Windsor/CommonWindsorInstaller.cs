@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Runtime.Remoting.Messaging;
+using System.Threading.Tasks;
 using System.Web.Http;
 using Castle.Core;
 using Castle.Facilities.Startable;
@@ -73,19 +74,10 @@ namespace Xemio.Logse.Server.Windsor
             ravenDbServer.DocumentStore.DefaultDatabase = Dependency.OnAppSettingsValue("Logse/RavenName").Value;
             ravenDbServer.DocumentStore.DatabaseCommands.GlobalAdmin.EnsureDatabaseExists(ravenDbServer.DocumentStore.DefaultDatabase);
 
-            ravenDbServer.DocumentStore.Conventions.RegisterIdConvention<ApiKey>((dbName, databaseCommands, entity) =>
-            {
-                string typeTagName = ravenDbServer.DocumentStore.Conventions.GetTypeTagName(entity.GetType());
-                return string.Format("{0}/{1}", typeTagName, entity.Key);
-            });
-            ravenDbServer.DocumentStore.Conventions.RegisterAsyncIdConvention<ApiKey>((dbName, databaseCommands, entity) =>
-            {
-                string typeTagName = ravenDbServer.DocumentStore.Conventions.GetTypeTagName(entity.GetType());
-                return new CompletedTask<string>(string.Format("{0}/{1}", typeTagName, entity.Key));
-            });
-
             ravenDbServer.FilesStore.DefaultFileSystem = Dependency.OnAppSettingsValue("Logse/RavenName").Value;
             ravenDbServer.FilesStore.AsyncFilesCommands.Admin.EnsureFileSystemExistsAsync(ravenDbServer.FilesStore.DefaultFileSystem).Wait();
+
+            this.CustomizeDocumentStore(ravenDbServer.DocumentStore);
 
             IndexCreation.CreateIndexes(this.GetType().Assembly, ravenDbServer.DocumentStore);
 
@@ -95,6 +87,23 @@ namespace Xemio.Logse.Server.Windsor
             }
 
             return ravenDbServer;
+        }
+        /// <summary>
+        /// Customizes the document store.
+        /// </summary>
+        /// <param name="documentStore">The document store.</param>
+        private void CustomizeDocumentStore(DocumentStore documentStore)
+        {
+            documentStore.Conventions.RegisterIdConvention<ApiKey>((dbName, databaseCommands, entity) =>
+            {
+                string typeTagName = documentStore.Conventions.GetTypeTagName(entity.GetType());
+                return string.Format("{0}/{1}", typeTagName, entity.Key);
+            });
+            documentStore.Conventions.RegisterAsyncIdConvention<ApiKey>((dbName, databaseCommands, entity) =>
+            {
+                string typeTagName = documentStore.Conventions.GetTypeTagName(entity.GetType());
+                return Task.FromResult(string.Format("{0}/{1}", typeTagName, entity.Key));
+            });
         }
         #endregion
     }
