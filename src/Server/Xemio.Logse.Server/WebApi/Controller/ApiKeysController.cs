@@ -45,7 +45,7 @@ namespace Xemio.Logse.Server.WebApi.Controller
             var key = new ApiKey
             {
                 ProjectId = project.Id,
-                Key = Guid.NewGuid().ToString("N"),
+                Key = Guid.NewGuid().ToString("D"),
                 Name = name,
                 Mode = mode
             };

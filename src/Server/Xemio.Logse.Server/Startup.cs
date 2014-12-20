@@ -55,8 +55,6 @@ namespace Xemio.Logse.Server
             this.ConfigureRoutes(config);
             this.ConfigureAllowOnlyJson(config);
 
-            config.EnsureInitialized();
-
             appBuilder.UseWebApi(config);
         }
         /// <summary>

@@ -7,14 +7,31 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using Raven.Client;
 using Raven.Client.Linq;
+using Xemio.Logse.Server.Data;
 using Xemio.Logse.Server.Data.Entities;
 using Xemio.Logse.Server.Extensions;
 using Xemio.Logse.Server.Raven.Indexes;
+using Xemio.Logse.Server.WebApi.Controller;
 
 namespace Xemio.Logse.Server.WebApi.Filters
 {
     public class RequiresApiKeyAttribute : AuthorizeAttribute
     {
+        #region Fields
+        private readonly ApiKeyMode _mode;
+        #endregion
+
+        #region Constructors
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RequiresApiKeyAttribute"/> class.
+        /// </summary>
+        /// <param name="mode">The mode.</param>
+        public RequiresApiKeyAttribute(ApiKeyMode mode)
+        {
+            this._mode = mode;
+        }
+        #endregion
+
         #region Methods
         /// <summary>
         /// Processes requests that fail authorization.
@@ -43,7 +60,16 @@ namespace Xemio.Logse.Server.WebApi.Filters
                 if (apiKey == null)
                     return false;
 
-                return apiKey.IsDeactivated == false;
+                if (apiKey.IsDeactivated)
+                    return false;
+
+                if (apiKey.Mode != this._mode)
+                    return false;
+
+                var controller = (LogseController)actionContext.ControllerContext.Controller;
+                controller.AuthenticatedApiKey = apiKey;
+
+                return true;
             }
         }
         #endregion

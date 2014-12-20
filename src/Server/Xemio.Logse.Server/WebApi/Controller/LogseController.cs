@@ -4,10 +4,11 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using Raven.Client;
+using Xemio.Logse.Server.Data.Entities;
 
 namespace Xemio.Logse.Server.WebApi.Controller
 {
-    public class LogseController : ApiController
+    public abstract class LogseController : ApiController
     {
         #region Properties
         /// <summary>
@@ -21,6 +22,10 @@ namespace Xemio.Logse.Server.WebApi.Controller
         /// Gets the document session.
         /// </summary>
         public IAsyncDocumentSession DocumentSession { get; private set; }
+        /// <summary>
+        /// Gets or sets the authenticated API key.
+        /// </summary>
+        internal ApiKey AuthenticatedApiKey { get; set; }
         #endregion
 
         #region Constructors
@@ -28,7 +33,7 @@ namespace Xemio.Logse.Server.WebApi.Controller
         /// Initializes a new instance of the <see cref="LogseController"/> class.
         /// </summary>
         /// <param name="documentSession">The document session.</param>
-        public LogseController(IAsyncDocumentSession documentSession)
+        protected LogseController(IAsyncDocumentSession documentSession)
         {
             this.DocumentSession = documentSession;
         }

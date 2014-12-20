@@ -15,6 +15,7 @@ using Raven.Client.Indexes;
 using Raven.Database.Config;
 using Raven.Server;
 using Xemio.Logse.Server.Data.Entities;
+using Xemio.Logse.Server.Raven.Indexes;
 
 namespace Xemio.Logse.Server.Windsor
 {
@@ -63,7 +64,7 @@ namespace Xemio.Logse.Server.Windsor
 
                 DataDirectory = Path.Combine(".", "Database", "Data"),
                 CompiledIndexCacheDirectory = Path.Combine(".", "Database", "Raven"),
-                PluginsDirectory = Path.Combine(".", "Database", "Plugins"),
+                PluginsDirectory = Path.Combine(".", "Database", "Plugins")
             };
             config.Settings.Add("Raven/CompiledIndexCacheDirectory", config.CompiledIndexCacheDirectory);
 

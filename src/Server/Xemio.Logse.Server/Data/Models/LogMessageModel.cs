@@ -1,10 +1,12 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
 
-namespace Xemio.Logse.Server.Data.Entities
+namespace Xemio.Logse.Server.Data.Models
 {
-    internal class LogMessage : AggregateRoot
+    public class LogMessageModel
     {
+        public int Id { get; set; }
+
         public Guid Session { get; set; }
 
         public DateTimeOffset ClientTimeStamp { get; set; }
@@ -14,8 +16,5 @@ namespace Xemio.Logse.Server.Data.Entities
         public string Message { get; set; }
 
         public JToken AdditionalData { get; set; }
-
-        public string ApiKey { get; set; }
-        public string ProjectId { get; set; }
     }
 }
