@@ -41,7 +41,7 @@ namespace Xemio.Logse.Server.Windsor
 
             container.Register(
                 Component.For<IDocumentStore>().Instance(server.DocumentStore).LifestyleSingleton(),
-                Component.For<IAsyncDocumentSession>().UsingFactoryMethod((kernel, context) => kernel.Resolve<IDocumentStore>().OpenAsyncSession()));
+                Component.For<IAsyncDocumentSession>().UsingFactoryMethod((kernel, context) => kernel.Resolve<IDocumentStore>().OpenAsyncSession()).LifestyleScoped());
 
             //Startables
             container.AddFacility<StartableFacility>(f => f.DeferredStart());
@@ -61,24 +61,20 @@ namespace Xemio.Logse.Server.Windsor
             var config = new RavenConfiguration
             {
                 Port = int.Parse(Dependency.OnAppSettingsValue("Logse/RavenHttpServerPort").Value),
-
                 DataDirectory = Path.Combine(".", "Database", "Data"),
-                CompiledIndexCacheDirectory = Path.Combine(".", "Database", "Raven"),
-                PluginsDirectory = Path.Combine(".", "Database", "Plugins")
+                PluginsDirectory = Path.Combine(".", "Database", "Plugins"),
+                Settings =
+                {
+                    { "Raven/CompiledIndexCacheDirectory", Path.Combine(".", "Database", "Raven") }
+                }
             };
-            config.Settings.Add("Raven/CompiledIndexCacheDirectory", config.CompiledIndexCacheDirectory);
 
             var ravenDbServer = new RavenDbServer(config);
-
+            this.CustomizeDocumentStore(ravenDbServer.DocumentStore);
             ravenDbServer.Initialize();
 
             ravenDbServer.DocumentStore.DefaultDatabase = Dependency.OnAppSettingsValue("Logse/RavenName").Value;
             ravenDbServer.DocumentStore.DatabaseCommands.GlobalAdmin.EnsureDatabaseExists(ravenDbServer.DocumentStore.DefaultDatabase);
-
-            ravenDbServer.FilesStore.DefaultFileSystem = Dependency.OnAppSettingsValue("Logse/RavenName").Value;
-            ravenDbServer.FilesStore.AsyncFilesCommands.Admin.EnsureFileSystemExistsAsync(ravenDbServer.FilesStore.DefaultFileSystem).Wait();
-
-            this.CustomizeDocumentStore(ravenDbServer.DocumentStore);
 
             IndexCreation.CreateIndexes(this.GetType().Assembly, ravenDbServer.DocumentStore);
 
