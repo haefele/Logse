@@ -63,6 +63,8 @@ namespace Xemio.Logse.Server.Windsor
                 Port = int.Parse(Dependency.OnAppSettingsValue("Logse/RavenHttpServerPort").Value),
                 DataDirectory = Path.Combine(".", "Database", "Data"),
                 PluginsDirectory = Path.Combine(".", "Database", "Plugins"),
+                AssembliesDirectory = Path.Combine(".", "Database", "Assemblies"),
+                EmbeddedFilesDirectory = Path.Combine(".", "Database", "Embedded"),
                 Settings =
                 {
                     { "Raven/CompiledIndexCacheDirectory", Path.Combine(".", "Database", "Raven") }
